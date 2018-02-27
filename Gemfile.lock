@@ -266,12 +266,17 @@ GEM
       multi_json (~> 1.3)
       omniauth (>= 1.1.1)
       omniauth-oauth2 (>= 1.3.1)
+    omniauth-kerberos (0.3.0)
+      omniauth-multipassword
+      timfel-krb5-auth (~> 0.8)
     omniauth-linkedin-oauth2 (0.2.5)
       omniauth (~> 1.0)
       omniauth-oauth2
     omniauth-microsoft-office365 (0.0.7)
       omniauth
       omniauth-oauth2
+    omniauth-multipassword (0.4.2)
+      omniauth (~> 1.0)
     omniauth-oauth (1.1.0)
       oauth
       omniauth (~> 1.0)
@@ -417,6 +422,7 @@ GEM
     thor (0.20.0)
     thread_safe (0.3.6)
     tilt (2.0.8)
+    timfel-krb5-auth (0.8.3)
     tins (1.15.1)
     twitter (6.2.0)
       addressable (~> 2.3)
@@ -512,6 +518,7 @@ DEPENDENCIES
   omniauth-github
   omniauth-gitlab
   omniauth-google-oauth2
+  omniauth-kerberos
   omniauth-linkedin-oauth2
   omniauth-microsoft-office365
   omniauth-oauth2
