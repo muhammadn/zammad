@@ -100,4 +100,9 @@ App.Config.set('auth_provider_all', {
     name:   'Weibo'
     config: 'auth_weibo'
     class:  'weibo'
+  kerberos:
+    url:    '/auth/kerberos'
+    name:   'Kerberos'
+    config: 'auth_kerberos'
+    class:  'kerberos'
 })
