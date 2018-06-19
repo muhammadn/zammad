@@ -24,6 +24,6 @@ class Observer::Ticket::Article::CommunicateEmail < ActiveRecord::Observer
     return if type['name'] != 'email'
 
     # send background job
-    Delayed::Job.enqueue(Observer::Ticket::Article::CommunicateEmail::BackgroundJob.new(record.id))
+    Ticket::Article::CommunicateEmail::BackgroundJob.perform_later(record.id)
   end
 end

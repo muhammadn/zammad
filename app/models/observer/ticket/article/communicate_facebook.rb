@@ -22,7 +22,7 @@ class Observer::Ticket::Article::CommunicateFacebook < ActiveRecord::Observer
     type = Ticket::Article::Type.lookup(id: record.type_id)
     return if type['name'] !~ /\Afacebook/
 
-    Delayed::Job.enqueue(Observer::Ticket::Article::CommunicateFacebook::BackgroundJob.new(record.id))
+    Ticket::Article::CommunicateTwitter::BackgroundJob.perform_later(record.id)
   end
 
 end

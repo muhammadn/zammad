@@ -20,6 +20,7 @@ gem 'mysql2', group: :mysql
 gem 'pg', group: :postgres
 
 # core - asynchrous task execution
+gem 'activejob_dj_overrides'
 gem 'daemons'
 gem 'delayed_job_active_record'
 

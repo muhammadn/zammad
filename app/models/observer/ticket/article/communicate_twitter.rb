@@ -24,7 +24,7 @@ class Observer::Ticket::Article::CommunicateTwitter < ActiveRecord::Observer
     return if type['name'] !~ /\Atwitter/i
 
     raise Exceptions::UnprocessableEntity, 'twitter to: parameter is missing' if record.to.blank? && type['name'] == 'twitter direct-message'
-    Delayed::Job.enqueue(Observer::Ticket::Article::CommunicateTwitter::BackgroundJob.new(record.id))
+    Ticket::Article::CommunicateTwitter::BackgroundJob.perform_later(record.id)
   end
 
 end

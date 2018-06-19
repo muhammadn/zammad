@@ -48,7 +48,7 @@ class Observer::Transaction < ActiveRecord::Observer
         end
 
         # execute async backends
-        Delayed::Job.enqueue(Transaction::BackgroundJob.new(item, params))
+        Transaction::TransactionJob.perform_later(item, params)
       end
     end
   end

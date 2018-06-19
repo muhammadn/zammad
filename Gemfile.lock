@@ -43,6 +43,9 @@ GEM
     activejob (5.1.5)
       activesupport (= 5.1.5)
       globalid (>= 0.3.6)
+    activejob_dj_overrides (0.2.0)
+      delayed_job
+      rails (>= 4.2)
     activemodel (5.1.5)
       activesupport (= 5.1.5)
     activerecord (5.1.5)
@@ -476,6 +479,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activejob_dj_overrides
   activerecord-nulldb-adapter
   activerecord-session_store
   argon2
