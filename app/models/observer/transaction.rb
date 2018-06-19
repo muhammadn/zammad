@@ -47,6 +47,9 @@ class Observer::Transaction < ActiveRecord::Observer
           execute_singel_backend(backend, item, params)
         end
 
+        item[:created_at] = item[:created_at].to_s
+        params[:trigger_ids] = params[:trigger_ids].map { |key, value| { key.to_s => value } } if params[:trigger_ids]
+
         # execute async backends
         Transaction::TransactionJob.perform_later(item, params)
       end
