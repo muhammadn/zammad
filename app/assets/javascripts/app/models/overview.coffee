@@ -76,6 +76,21 @@ You can also create overvies and limit them to specific agents or to groups of a
   uiUrl: ->
     "#ticket/view/#{@link}"
 
+  tickets: =>
+    App.OverviewListCollection.get(@link).tickets
+
+  indexOf: (ticket) =>
+    # coerce id to Ticket object
+    ticket = App.Ticket.find(ticket) if !(isNaN ticket)
+    _.findIndex(@tickets(), (t) -> t.id == ticket.id)
+
+  nextTicket: (thisTicket) =>
+    thisIndex = @indexOf(thisTicket)
+    if thisIndex >= 0 then @tickets()[thisIndex + 1] else undefined
+
+  prevTicket: (thisTicket) =>
+    @tickets()[@indexOf(thisTicket) - 1]
+
   @groupByAttributes: ->
     groupByAttributes = {}
     for key, attribute of App.Ticket.attributesGet()

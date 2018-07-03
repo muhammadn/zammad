@@ -1,7 +1,7 @@
-require 'test_helper'
+require 'integration_test_helper'
 
 class MonitoringControllerTest < ActionDispatch::IntegrationTest
-  self.use_transactional_tests = false
+
   setup do
 
     # set accept header

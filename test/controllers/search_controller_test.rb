@@ -15,7 +15,7 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     roles  = Role.where(name: %w[Admin Agent])
     groups = Group.all
 
-    @admin = User.create_or_update(
+    @admin = User.create!(
       login: 'search-admin',
       firstname: 'Search',
       lastname: 'Admin',
@@ -28,7 +28,7 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
 
     # create agent
     roles = Role.where(name: 'Agent')
-    @agent = User.create_or_update(
+    @agent = User.create!(
       login: 'search-agent@example.com',
       firstname: 'Search 1234',
       lastname: 'Agent',
@@ -41,7 +41,7 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
 
     # create customer without org
     roles = Role.where(name: 'Customer')
-    @customer_without_org = User.create_or_update(
+    @customer_without_org = User.create!(
       login: 'search-customer1@example.com',
       firstname: 'Search',
       lastname: 'Customer1',
@@ -52,18 +52,24 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     )
 
     # create orgs
-    @organization = Organization.create_or_update(
+    @organization = Organization.create!(
       name: 'Rest Org',
     )
-    @organization2 = Organization.create_or_update(
+    @organization2 = Organization.create!(
       name: 'Rest Org #2',
     )
-    @organization3 = Organization.create_or_update(
+    @organization3 = Organization.create!(
       name: 'Rest Org #3',
+    )
+    @organization4 = Organization.create!(
+      name: 'Tes.t. Org',
+    )
+    @organization5 = Organization.create!(
+      name: 'ABC_D Org',
     )
 
     # create customer with org
-    @customer_with_org2 = User.create_or_update(
+    @customer_with_org2 = User.create!(
       login: 'search-customer2@example.com',
       firstname: 'Search',
       lastname: 'Customer2',
@@ -74,7 +80,7 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
       organization_id: @organization.id,
     )
 
-    @customer_with_org3 = User.create_or_update(
+    @customer_with_org3 = User.create!(
       login: 'search-customer3@example.com',
       firstname: 'Search',
       lastname: 'Customer3',
@@ -414,4 +420,29 @@ class SearchControllerTest < ActionDispatch::IntegrationTest
     assert_not(result['result'][0])
   end
 
+  # Verify fix for Github issue #2058 - Autocomplete hangs on dot in the new user form
+  test 'searching for organization with a dot in its name' do
+    credentials = ActionController::HttpAuthentication::Basic.encode_credentials('search-agent@example.com', 'agentpw')
+
+    get '/api/v1/search/organization?query=tes.', headers: @headers.merge('Authorization' => credentials)
+    assert_response(200)
+    result = JSON.parse(@response.body)
+    assert_equal(1, result['result'].size)
+    assert_equal('Organization', result['result'][0]['type'])
+    target_id = result['result'][0]['id']
+    assert_equal('Tes.t. Org', result['assets']['Organization'][target_id.to_s]['name'])
+  end
+
+  # Search query H& should correctly match H&M
+  test 'searching for organization with _ in its name' do
+    credentials = ActionController::HttpAuthentication::Basic.encode_credentials('search-agent@example.com', 'agentpw')
+
+    get '/api/v1/search/organization?query=abc_', headers: @headers.merge('Authorization' => credentials)
+    assert_response(200)
+    result = JSON.parse(@response.body)
+    assert_equal(1, result['result'].size)
+    assert_equal('Organization', result['result'][0]['type'])
+    target_id = result['result'][0]['id']
+    assert_equal('ABC_D Org', result['assets']['Organization'][target_id.to_s]['name'])
+  end
 end

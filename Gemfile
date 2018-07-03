@@ -122,8 +122,11 @@ gem 'viewpoint'
 group :development, :test do
 
   # debugging
+  gem 'byebug'
   gem 'pry-rails'
   gem 'pry-remote'
+  gem 'pry-rescue'
+  gem 'pry-stack_explorer'
 
   # test frameworks
   gem 'rspec-rails'
@@ -143,7 +146,7 @@ group :development, :test do
   # livereload on template changes (html, js, css)
   gem 'guard',             require: false
   gem 'guard-livereload',  require: false
-  gem 'rack-livereload'
+  gem 'rack-livereload',   require: false
   gem 'rb-fsevent',        require: false
 
   # auto symlinking
