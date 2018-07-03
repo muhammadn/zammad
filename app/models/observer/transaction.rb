@@ -49,7 +49,7 @@ class Observer::Transaction < ActiveRecord::Observer
 
         item[:created_at] = item[:created_at].to_s
         params[:trigger_ids] = params[:trigger_ids].map { |key, value| { key.to_s => value } } if params[:trigger_ids]
-	item = item.to_s if item.class.is_a?(Time)
+        item = item.to_s if item.class.is_a?(Time)
 
         # execute async backends
         Transaction::TransactionJob.perform_later(item, params)
