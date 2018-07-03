@@ -23,6 +23,7 @@ gem 'pg', group: :postgres
 gem 'activejob_dj_overrides'
 gem 'daemons'
 gem 'delayed_job_active_record'
+gem 'sidekiq'
 
 # core - websocket
 gem 'em-websocket'
