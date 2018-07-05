@@ -3,7 +3,7 @@ class ActiveSupport::TimeWithZone
 
   alias id to_i
   def self.find(seconds_since_epoch)
-    Time.zone.at.utc(seconds_since_epoch.to_i)
+    Time.zone.at(seconds_since_epoch.to_i)
   end
 end
 
@@ -12,6 +12,8 @@ class Time
 
   alias id to_i
   def self.find(seconds_since_epoch)
-    Time.at.utc(seconds_since_epoch.to_i)
+    # rubocop:disable Rails/TimeZone
+    Time.at(seconds_since_epoch.to_i)
+    # rubocop:enable Rails/TimeZone
   end
 end
