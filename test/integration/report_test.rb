@@ -44,6 +44,8 @@ class ReportTest < ActiveSupport::TestCase
       updated_by_id: 1,
       created_by_id: 1,
     )
+    @ticket1.tag_add('aaa', 1)
+    @ticket1.tag_add('bbb', 1)
     @ticket1.update!(
       group: Group.lookup(name: 'Users'),
       updated_at: '2015-10-28 14:30:00 UTC',
@@ -75,6 +77,7 @@ class ReportTest < ActiveSupport::TestCase
       updated_by_id: 1,
       created_by_id: 1,
     )
+    @ticket2.tag_add('aaa', 1)
     @ticket2.update!(
       group_id: group2.id,
       updated_at: '2015-10-28 14:30:00 UTC',
@@ -162,6 +165,7 @@ class ReportTest < ActiveSupport::TestCase
       updated_by_id: 1,
       created_by_id: 1,
     )
+    @ticket5.tag_add('bbb', 1)
     @ticket5.update!(
       state: Ticket::State.lookup(name: 'open'),
       updated_at: '2015-10-28 14:30:00 UTC',
@@ -247,6 +251,34 @@ class ReportTest < ActiveSupport::TestCase
       type: Ticket::Article::Type.where(name: 'email').first,
       created_at: '2015-11-02 12:30:00 UTC',
       updated_at: '2015-11-02 12:30:00 UTC',
+      updated_by_id: 1,
+      created_by_id: 1,
+    )
+
+    @ticket9 = Ticket.create!(
+      title: 'test 9',
+      group: group1,
+      customer_id: 2,
+      state: Ticket::State.lookup(name: 'open'),
+      priority: Ticket::Priority.lookup(name: '2 normal'),
+      close_at: '2037-11-02 12:30:00 UTC',
+      created_at: '2037-11-02 12:30:00 UTC',
+      updated_at: '2037-11-02 12:30:00 UTC',
+      updated_by_id: 1,
+      created_by_id: 1,
+    )
+    Ticket::Article.create!(
+      ticket_id: @ticket9.id,
+      from: 'some_sender@example.com',
+      to: 'some_recipient@example.com',
+      subject: 'some subject',
+      message_id: 'some@id',
+      body: 'some message article_outbound',
+      internal: false,
+      sender: Ticket::Article::Sender.where(name: 'Agent').first,
+      type: Ticket::Article::Type.where(name: 'email').first,
+      created_at: '2037-11-02 12:30:00 UTC',
+      updated_at: '2037-11-02 12:30:00 UTC',
       updated_by_id: 1,
       created_by_id: 1,
     )
@@ -967,6 +999,359 @@ class ReportTest < ActiveSupport::TestCase
     assert_equal(@ticket2.id, result[:ticket_ids][5].to_i)
     assert_equal(@ticket1.id, result[:ticket_ids][6].to_i)
     assert_nil(result[:ticket_ids][7])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'before (absolute)',
+          'value' => '2015-10-31T00:00:00Z'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket5.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket4.id, result[:ticket_ids][1].to_i)
+    assert_equal(@ticket3.id, result[:ticket_ids][2].to_i)
+    assert_equal(@ticket2.id, result[:ticket_ids][3].to_i)
+    assert_equal(@ticket1.id, result[:ticket_ids][4].to_i)
+    assert_nil(result[:ticket_ids][5])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'after (absolute)',
+          'value' => '2015-10-31T00:00:00Z'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket7.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket6.id, result[:ticket_ids][1].to_i)
+    assert_nil(result[:ticket_ids][2])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'before (relative)',
+          'range' => 'day',
+          'value' => '1'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'after (relative)',
+          'range' => 'day',
+          'value' => '1'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_nil(result[:ticket_ids][0])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2037-01-01T00:00:00Z',
+      range_end:   '2037-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'before (relative)',
+          'range' => 'day',
+          'value' => '1'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_nil(result[:ticket_ids][0])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2037-01-01T00:00:00Z',
+      range_end:   '2037-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'after (relative)',
+          'range' => 'day',
+          'value' => '5'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket9.id, result[:ticket_ids][0].to_i)
+    assert_nil(result[:ticket_ids][1])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2037-01-01T00:00:00Z',
+      range_end:   '2037-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'before (relative)',
+          'range' => 'month',
+          'value' => '1'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_nil(result[:ticket_ids][0])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2037-01-01T00:00:00Z',
+      range_end:   '2037-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'after (relative)',
+          'range' => 'month',
+          'value' => '5'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket9.id, result[:ticket_ids][0].to_i)
+    assert_nil(result[:ticket_ids][1])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2037-01-01T00:00:00Z',
+      range_end:   '2037-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'before (relative)',
+          'range' => 'year',
+          'value' => '1'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_nil(result[:ticket_ids][0])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2037-01-01T00:00:00Z',
+      range_end:   '2037-12-31T23:59:59Z',
+      selector: {
+        'created_at' => {
+          'operator' => 'after (relative)',
+          'range' => 'year',
+          'value' => '5'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket9.id, result[:ticket_ids][0].to_i)
+    assert_nil(result[:ticket_ids][1])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'tags' => {
+          'operator' => 'contains all',
+          'value' => 'aaa, bbb'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket1.id, result[:ticket_ids][0].to_i)
+    assert_nil(result[:ticket_ids][1])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'tags' => {
+          'operator' => 'contains all not',
+          'value' => 'aaa, bbb'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket7.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket6.id, result[:ticket_ids][1].to_i)
+    assert_equal(@ticket5.id, result[:ticket_ids][2].to_i)
+    assert_equal(@ticket4.id, result[:ticket_ids][3].to_i)
+    assert_equal(@ticket3.id, result[:ticket_ids][4].to_i)
+    assert_equal(@ticket2.id, result[:ticket_ids][5].to_i)
+    assert_nil(result[:ticket_ids][6])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'tags' => {
+          'operator' => 'contains all',
+          'value' => 'aaa'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+
+    assert_equal(@ticket2.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket1.id, result[:ticket_ids][1].to_i)
+    assert_nil(result[:ticket_ids][2])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'tags' => {
+          'operator' => 'contains all not',
+          'value' => 'aaa'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket7.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket6.id, result[:ticket_ids][1].to_i)
+    assert_equal(@ticket5.id, result[:ticket_ids][2].to_i)
+    assert_equal(@ticket4.id, result[:ticket_ids][3].to_i)
+    assert_equal(@ticket3.id, result[:ticket_ids][4].to_i)
+    assert_nil(result[:ticket_ids][5])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'tags' => {
+          'operator' => 'contains one not',
+          'value' => 'aaa'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+
+    assert_equal(@ticket7.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket6.id, result[:ticket_ids][1].to_i)
+    assert_equal(@ticket5.id, result[:ticket_ids][2].to_i)
+    assert_equal(@ticket4.id, result[:ticket_ids][3].to_i)
+    assert_equal(@ticket3.id, result[:ticket_ids][4].to_i)
+    assert_nil(result[:ticket_ids][5])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'tags' => {
+          'operator' => 'contains one not',
+          'value' => 'aaa, bbb'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket7.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket6.id, result[:ticket_ids][1].to_i)
+    assert_equal(@ticket4.id, result[:ticket_ids][2].to_i)
+    assert_equal(@ticket3.id, result[:ticket_ids][3].to_i)
+    assert_nil(result[:ticket_ids][4])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'tags' => {
+          'operator' => 'contains one',
+          'value' => 'aaa'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+
+    assert_equal(@ticket2.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket1.id, result[:ticket_ids][1].to_i)
+    assert_nil(result[:ticket_ids][2])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'tags' => {
+          'operator' => 'contains one',
+          'value' => 'aaa, bbb'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket5.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket2.id, result[:ticket_ids][1].to_i)
+    assert_equal(@ticket1.id, result[:ticket_ids][2].to_i)
+    assert_nil(result[:ticket_ids][3])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'title' => {
+          'operator' => 'contains',
+          'value' => 'test'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_equal(@ticket7.id, result[:ticket_ids][0].to_i)
+    assert_equal(@ticket6.id, result[:ticket_ids][1].to_i)
+    assert_equal(@ticket5.id, result[:ticket_ids][2].to_i)
+    assert_equal(@ticket4.id, result[:ticket_ids][3].to_i)
+    assert_equal(@ticket3.id, result[:ticket_ids][4].to_i)
+    assert_equal(@ticket2.id, result[:ticket_ids][5].to_i)
+    assert_equal(@ticket1.id, result[:ticket_ids][6].to_i)
+    assert_nil(result[:ticket_ids][7])
+
+    result = Report::TicketGenericTime.items(
+      range_start: '2015-01-01T00:00:00Z',
+      range_end:   '2015-12-31T23:59:59Z',
+      selector: {
+        'title' => {
+          'operator' => 'contains not',
+          'value' => 'test'
+        }
+      }, # ticket selector to get only a collection of tickets
+      params:      { field: 'created_at' },
+    )
+
+    assert(result)
+    assert_nil(result[:ticket_ids][0])
 
     # cleanup
     Rake::Task['searchindex:drop'].execute
