@@ -1,7 +1,10 @@
 # Copyright (C) 2012-2016 Zammad Foundation, http://zammad-foundation.org/
 
 class Transaction::TransactionJob < ApplicationJob
-  queue_as :default
+  queue_as :transactions
+  rescue_from(NameError, NoMethodError) do
+    retry_job wait: 3.minutes
+  end
 
   def perform(item, params = {})
     Setting.where(area: 'Transaction::Backend::Async').order(:name).each do |setting|

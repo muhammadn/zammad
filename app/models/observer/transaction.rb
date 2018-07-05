@@ -49,9 +49,6 @@ class Observer::Transaction < ActiveRecord::Observer
 
         item[:created_at] = item[:created_at].to_s
         params[:trigger_ids] = params[:trigger_ids].map { |key, value| { key.to_s => value } } if params[:trigger_ids]
-        if item.dig(:changes, 'last_owner_update_at')[1].is_a?(Time)
-          item[:changes]['last_owner_update_at'][1] = item[:changes]['last_owner_update_at'][1].to_s
-        end
 
         # execute async backends
         Transaction::TransactionJob.perform_later(item, params)

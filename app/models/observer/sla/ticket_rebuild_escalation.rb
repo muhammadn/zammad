@@ -13,7 +13,7 @@ class Observer::Sla::TicketRebuildEscalation < ActiveRecord::Observer
     Cache.delete('SLA::List::Active')
 
     # send background job
-    Delayed::Job.enqueue( Observer::Sla::TicketRebuildEscalation::BackgroundJob.new(record.id) )
+    TicketRebuildEscalation::BackgroundJob.perform_later(record.id)
   end
 
   def _check(record)

@@ -1,6 +1,6 @@
 # Copyright (C) 2012-2016 Zammad Foundation, http://zammad-foundation.org/
 class BackgroundJobSearchIndex < ApplicationJob
-  queue_as :default
+  queue_as :search_index
 
   def perform(object, o_id)
     record = object.constantize.lookup(id: o_id)

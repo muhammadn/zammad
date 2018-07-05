@@ -1,0 +1,11 @@
+---
+:concurrency: 10
+:production:
+  :concurrency: 30
+:development:
+  :concurrency: 3
+:queues:
+  - transactions
+  - search_index
+  - default
+  - low_priority

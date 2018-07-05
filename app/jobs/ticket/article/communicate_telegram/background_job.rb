@@ -1,5 +1,8 @@
 class Ticket::Article::CommunicateTelegram::BackgroundJob < ApplicationJob
   queue_as :default
+  rescue_from(ActiveRecord::RecordNotFound) do
+    retry_job wait: 5.minutes, queue: :low_priority
+  end
 
   def perform(article_id)
     article = Ticket::Article.find(article_id)
