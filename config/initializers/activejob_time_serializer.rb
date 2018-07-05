@@ -12,8 +12,6 @@ class Time
 
   alias id to_i
   def self.find(seconds_since_epoch)
-    # rubocop:disable Rails/TimeZone
-    Time.at(seconds_since_epoch.to_i)
-    # rubocop:enable Rails/TimeZone
+    Time.at(seconds_since_epoch.to_i) # rubocop:disable Rails/TimeZone
   end
 end
